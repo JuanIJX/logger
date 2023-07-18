@@ -1,0 +1,23 @@
+{
+  "name": "@ijx/logger",
+  "version": "1.0.0",
+  "description": "Logs manager",
+  "main": "index.js",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JuanIJX/logger.git"
+  },
+  "keywords": [
+    "logs"
+  ],
+  "author": "JuanIJX",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JuanIJX/logger/issues"
+  },
+  "homepage": "https://github.com/JuanIJX/logger#readme",
+  "dependencies": {
+    "@ijx/utils": "^1.0.1"
+  }
+}
