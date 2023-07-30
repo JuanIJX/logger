@@ -4,7 +4,7 @@ import fs from 'fs' // Nativas
 import path from "path" // Nativas
 import { EOL } from "os" // Nativas
 
-import "@ijx/utils"
+import { createDirs } from "@ijx/utils"
 
 export const Level = {
 	NONE:   0,
@@ -104,14 +104,7 @@ export default class Logger {
 				fs.closeSync(this._file);
 		} });
 
-		if(!fs.existsSync(this._folder)) {
-			var totalpath = ".";
-			for(const dir of this._folder.split("\\")) {
-				totalpath = path.join(totalpath, dir);
-				if(!fs.existsSync(totalpath))
-					fs.mkdirSync(totalpath);
-			}
-		}
+		createDirs(this._folder);
     }
 
 	// Public functions
