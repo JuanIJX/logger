@@ -15,7 +15,7 @@ npm install @ijx/logger
 ```js
 import Logger, { Level } from "@ijx/logger"
 
-const logger = new Logger(systemPaths.logsTotalPath);
+const logger = new Logger("./logs");
 logger
 	.addLevelConsole(Level.DEBUG | Level.HIST)
 	.addLevelFile(Level.DEBUG);
