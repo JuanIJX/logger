@@ -6,6 +6,7 @@ import { EOL } from "os" // Nativas
 
 import { createDirs } from "@ijx/utils"
 
+export const DefInvoker = 0;
 export const Level = {
 	NONE:   0,
 
@@ -27,12 +28,12 @@ function stringifyNoCircular(obj, space=null) {
 	var cache = [];
 	var blockedKeys = [];
 	return JSON.stringify(obj, (key, value) => {
-	if (typeof value === 'object' && value !== null) {
-		if (blockedKeys.includes(key)) return;
-		if (cache.includes(value)) return;
-		cache.push(value);
-	}
-	return value;
+		if (typeof value === 'object' && value !== null) {
+			if (blockedKeys.includes(key)) return;
+			if (cache.includes(value)) return;
+			cache.push(value);
+		}
+		return value;
 	}, space);
 }
 
@@ -45,6 +46,7 @@ function processMsg(msg, debug) {
 }
 
 export default class Logger {
+	static _defPath = "logs";
 	static _extension = "txt";
 	static _hourFormat = "H:i:s";
 	static _getDate = () => new Date();
@@ -53,22 +55,11 @@ export default class Logger {
 		// Variables
 		Object.defineProperty(this, '_dayStr', { value: "", writable: true });
 		Object.defineProperty(this, '_file', { value: null, writable: true });
-		Object.defineProperty(this, '_folder', { value: folder!==undefined ? path.normalize(folder) : "logs" });
-		Object.defineProperty(this, '_levelConsole', { value: (Level.ALL & ~(Level.DEBUG | Level.HIST)), writable: true });
-		Object.defineProperty(this, '_levelFile', { value: (Level.ALL & ~Level.DEBUG), writable: true });
+		Object.defineProperty(this, '_folder', { value: folder!==undefined ? path.normalize(folder) : this.constructor._defPath });
+		Object.defineProperty(this, '_levelConsole', { value: { [DefInvoker]: Level.ALL & ~(Level.DEBUG | Level.HIST)}, writable: true });
+		Object.defineProperty(this, '_levelFile', { value: { [DefInvoker]: Level.ALL & ~Level.DEBUG }, writable: true });
 
 		// Functions
-		Object.defineProperty(this, "levelConsole", {
-			get() { return this._levelConsole; },
-			set(level) { this.setLevelConsole(level); },
-			enumerable: true
-		});
-		Object.defineProperty(this, "levelFile", {
-			get() { return this._levelFile; },
-			set(level) { this.setLevelFile(level); },
-			enumerable: true
-		});
-
 		Object.defineProperty(this, "_log", { value: function(loglevel, invoker, msg, date, loglevelName) {
 			var _msg = [
 				date.format(this.constructor._hourFormat),
@@ -76,20 +67,21 @@ export default class Logger {
 				`(${loglevelName})`,
 				msg,
 			].filter(e => e!==null);
-
-			if(this.levelConsole & loglevel)
-				this._writeConsole(_msg);
-			if(this.levelFile & loglevel)
-				this._writeFile(_msg);
+			if(this._getLevelConsole(invoker) & loglevel) this._writeConsole(_msg);
+			if(this._getLevelFile(invoker) & loglevel) this._writeFile(_msg);
 		} });
 		Object.defineProperty(this, "_writeConsole", { value: function(msg) {
-			msg.push(processMsg(msg.pop(), this.levelConsole & Level.DEBUG));
+			msg.push(processMsg(msg.pop(), this._levelConsole & Level.DEBUG));
 			console.log(msg.join(" "));
 		} });
 		Object.defineProperty(this, "_writeFile", { value: function(msg) {
-			msg.push(processMsg(msg.pop(), this.levelFile & Level.DEBUG));
+			msg.push(processMsg(msg.pop(), this._levelFile & Level.DEBUG));
 			fs.writeSync(this._getFile(), msg.join(" ") + EOL);
 		} });
+
+		Object.defineProperty(this, "_getLevelConsole", { value: function(invoker) { return this._levelConsole[invoker] ?? this._levelConsole[DefInvoker]; } });
+		Object.defineProperty(this, "_getLevelFile", { value: function(invoker) { return this._levelFile[invoker] ?? this._levelFile[DefInvoker]; } });
+
 		Object.defineProperty(this, "_getFile", { value: function() {
 			var today = this.constructor._getDate().format("Y-m-d");
 			if(this._dayStr != today) {
@@ -108,29 +100,25 @@ export default class Logger {
     }
 
 	// Public functions
-	addLevelConsole(level) {
-		this._levelConsole |= level;
-		return this;
-	}
-	delLevelConsole(level) {
-		this._levelConsole &= ~level;
-		return this;
-	}
-	setLevelConsole(level) {
-		this._levelConsole = level;
+	getLevelConsole(invoker=DefInvoker) { return this._getLevelConsole(invoker); }
+	addLevelConsole(level, invoker=DefInvoker) { this._levelConsole[invoker] = this._getLevelConsole(invoker) | level; return this; }
+	delLevelConsole(level, invoker=DefInvoker) { this._levelConsole[invoker] = this._getLevelConsole(invoker) & ~level; return this; }
+	setLevelConsole(level, invoker=DefInvoker) { this._levelConsole[invoker] = level; return this; }
+	clearLevelConsole(invoker) {
+		if(invoker == DefInvoker)
+			throw new Error(`No se puede eliminar el invoker default`);
+		delete this._levelConsole[invoker];
 		return this;
 	}
 
-	addLevelFile(level) {
-		this._levelFile |= level;
-		return this;
-	}
-	delLevelFile(level) {
-		this._levelFile &= ~level;
-		return this;
-	}
-	setLevelFile(level) {
-		this._levelFile = level;
+	getLevelFile(invoker=DefInvoker) { return this._getLevelFile(invoker); }
+	addLevelFile(level, invoker=DefInvoker) { this._levelFile[invoker] = this._getLevelFile(invoker) | level; return this; }
+	delLevelFile(level, invoker=DefInvoker) { this._levelFile[invoker] = this._getLevelFile(invoker) & ~level; return this; }
+	setLevelFile(level, invoker=DefInvoker) { this._levelFile[invoker] = level; return this; }
+	clearLevelFile(invoker) {
+		if(invoker == DefInvoker)
+			throw new Error(`No se puede eliminar el invoker default`);
+		delete this._levelFile[invoker];
 		return this;
 	}
 
