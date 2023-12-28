@@ -9,16 +9,16 @@ import { createDirs } from "@ijx/utils"
 export const Level = {
 	NONE:   0,
 
-	INFO:	1 << 0,
-	DEBUG:	1 << 1,
-	WARN:	1 << 2,
-	ERROR:	1 << 3,
-	FATAL:	1 << 4,
-	HIST:	1 << 5,
-	TEST:	1 << 6,
-	TEST2:	1 << 7,
+	INFO:	0x01,
+	DEBUG:	0x02,
+	WARN:	0x04,
+	ERROR:	0x08,
+	FATAL:	0x10,
+	HIST:	0x20,
+	TEST:	0x40,
+	TEST2:	0x80,
 
-	ALLERR: 0x38,
+	ALLERR: 0x18,
 
 	ALL:    0xff,
 };
