@@ -1,6 +1,6 @@
 {
   "name": "@ijx/logger",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Logs manager",
   "main": "index.js",
   "type": "module",
