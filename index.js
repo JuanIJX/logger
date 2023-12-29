@@ -46,10 +46,23 @@ function processMsg(msg, debug) {
 }
 
 export default class Logger {
+	static instance = null;
 	static _defPath = "logs";
 	static _extension = "txt";
 	static _hourFormat = "H:i:s";
 	static _getDate = () => new Date();
+
+	static get(folder) {
+		if(this.instance === null)
+			this.instance = new this(folder);
+		return this.instance;
+	}
+
+	static log(loglevel, invoker, msg) {
+		if(this.instance === null)
+			throw new Error("Logger not created");
+		return this.instance.log(loglevel, invoker, msg);
+	}
 
     constructor(folder) {
 		// Variables
@@ -132,5 +145,6 @@ export default class Logger {
 		}
 		else // if(typeof msg == "string")
 			this._log(loglevel, invoker, msg, date, loglevelName);
+		return this;
 	}
 }
