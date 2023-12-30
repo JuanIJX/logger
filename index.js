@@ -80,15 +80,15 @@ export default class Logger {
 				`(${loglevelName})`,
 				msg,
 			].filter(e => e!==null);
-			if(this._getLevelConsole(invoker) & loglevel) this._writeConsole(_msg);
-			if(this._getLevelFile(invoker) & loglevel) this._writeFile(_msg);
+			if(this._getLevelConsole(invoker) & loglevel) this._writeConsole(_msg, invoker);
+			if(this._getLevelFile(invoker) & loglevel) this._writeFile(_msg, invoker);
 		} });
-		Object.defineProperty(this, "_writeConsole", { value: function(msg) {
-			msg.push(processMsg(msg.pop(), this._levelConsole & Level.DEBUG));
+		Object.defineProperty(this, "_writeConsole", { value: function(msg, invoker) {
+			msg.push(processMsg(msg.pop(), this._getLevelConsole(invoker) & Level.DEBUG));
 			console.log(msg.join(" "));
 		} });
-		Object.defineProperty(this, "_writeFile", { value: function(msg) {
-			msg.push(processMsg(msg.pop(), this._levelFile & Level.DEBUG));
+		Object.defineProperty(this, "_writeFile", { value: function(msg, invoker) {
+			msg.push(processMsg(msg.pop(), this._getLevelFile(invoker) & Level.DEBUG));
 			fs.writeSync(this._getFile(), msg.join(" ") + EOL);
 		} });
 
