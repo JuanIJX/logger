@@ -32,6 +32,7 @@ const logger = new Logger("./logs");
 
 // Settings
 logger
+    .setDateFormat("H:i:s")
 	.addLevelConsole(Level.HIST)
 	.addLevelFile(Level.HIST)
 	.addLevelConsole(Level.DEBUG, "INVOKER_B");

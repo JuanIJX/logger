@@ -1,10 +1,10 @@
-// 29/12/2023
+// 06/11/2025
 
 import fs from 'fs' // Nativas
 import path from "path" // Nativas
 import { EOL } from "os" // Nativas
 
-import { createDirs } from "@ijx/utils"
+import { createDirs, getDate } from "@ijx/utils"
 
 export const DefInvoker = 0;
 export const Level = {
@@ -49,8 +49,7 @@ export default class Logger {
 	static instance = null;
 	static _defPath = "logs";
 	static _extension = "txt";
-	static _hourFormat = "H:i:s";
-	static _getDate = () => new Date();
+	static _defaultDateFormat = "H:i:s";
 
 	static get(folder) {
 		if(this.instance === null)
@@ -69,13 +68,14 @@ export default class Logger {
 		Object.defineProperty(this, '_dayStr', { value: "", writable: true });
 		Object.defineProperty(this, '_file', { value: null, writable: true });
 		Object.defineProperty(this, '_folder', { value: folder!==undefined ? path.normalize(folder) : this.constructor._defPath });
+		Object.defineProperty(this, '_dateFormat', { value: this.constructor._defaultDateFormat, writable: true });
 		Object.defineProperty(this, '_levelConsole', { value: { [DefInvoker]: Level.ALL & ~(Level.DEBUG | Level.HIST)}, writable: true });
 		Object.defineProperty(this, '_levelFile', { value: { [DefInvoker]: Level.ALL & ~Level.DEBUG }, writable: true });
 
 		// Functions
 		Object.defineProperty(this, "_log", { value: function(loglevel, invoker, msg, date, loglevelName) {
 			var _msg = [
-				date.format(this.constructor._hourFormat),
+				date.format(this._dateFormat),
 				invoker=="" ? null : `[${invoker}]`,
 				`(${loglevelName})`,
 				msg,
@@ -96,7 +96,7 @@ export default class Logger {
 		Object.defineProperty(this, "_getLevelFile", { value: function(invoker) { return this._levelFile[invoker] ?? this._levelFile[DefInvoker]; } });
 
 		Object.defineProperty(this, "_getFile", { value: function() {
-			var today = this.constructor._getDate().format("Y-m-d");
+			var today = getDate().format("Y-m-d");
 			if(this._dayStr != today) {
 				this._dayStr = today;
 				this._closeFile();
@@ -134,10 +134,11 @@ export default class Logger {
 		delete this._levelFile[invoker];
 		return this;
 	}
-
+	
+	setDateFormat(format) { this._dateFormat = format; return this; }
 	log(loglevel, invoker, msg) {
 		var loglevelName = Level.getKeyByValue(loglevel);
-		var date = this.constructor._getDate();
+		var date = getDate();
 
 		if(Array.isArray(msg)) {
 			for (const value of msg)
